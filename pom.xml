@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>io.github.zakiis</groupId>
+	<artifactId>spring-cloud-zakiis-starter</artifactId>
+	<version>2022.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<name>spring-cloud-zakiis-starter</name>
+	<description>spring-cloud-zakiis-starter</description>
+	<url>https://github.com/zakiis/spring-cloud-zakiis-starter</url>
+	
+	<modules>
+		<module>zakiis-auditlog-starter</module>
+		<module>zakiis-gateway-starter</module>
+		<module>zakiis-job-starter</module>
+		<module>zakiis-log-starter</module>
+		<module>zakiis-rdb-starter</module>
+		<module>zakiis-security-starter</module>
+		<module>zakiis-web-starter</module>
+	</modules>
+	
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+	</properties>
+	
+	<licenses>
+		<license>
+			<name>The Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>Liu Zhenghua</name>
+			<email>1090179900@qq.com</email>
+			<organization>Sonatype</organization>
+			<organizationUrl>http://www.sonatype.com</organizationUrl>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git://github.com:zakiis/zakiis-release.git</connection>
+		<developerConnection>scm:git:ssh://github.com:zakiis/zakiis-release.git</developerConnection>
+		<url>http://github.com/zakiis/zakiis-release/tree/main</url>
+	</scm>
+	
+</project>

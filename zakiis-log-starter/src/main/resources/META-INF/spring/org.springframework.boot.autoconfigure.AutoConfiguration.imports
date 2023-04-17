@@ -1,0 +1,2 @@
+com.zakiis.log.config.TraceIdAutoConfiguration
+com.zakiis.log.config.DesensitizationAutoConfiguration

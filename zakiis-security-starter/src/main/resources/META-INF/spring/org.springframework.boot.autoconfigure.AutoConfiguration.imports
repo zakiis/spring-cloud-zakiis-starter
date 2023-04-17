@@ -1,0 +1,3 @@
+com.zakiis.security.config.AuthorizationAutoConfiguration
+com.zakiis.security.config.OptimisticLockAutoConfiguration
+com.zakiis.security.config.RateLimitAutoConfiguration
