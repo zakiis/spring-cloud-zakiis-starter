@@ -13,6 +13,7 @@ import org.springframework.web.server.ServerWebExchange;
 
 import com.zakiis.core.domain.constants.CommonConstants;
 import com.zakiis.gateway.config.GatewayProperties.LogRequestConfig;
+import com.zakiis.gateway.constant.GatewayConstant;
 import com.zakiis.gateway.util.ReactiveLogger;
 
 import lombok.RequiredArgsConstructor;
@@ -32,8 +33,9 @@ public class LogRequestFilter implements GlobalFilter, Ordered {
 			URI gatewayRequestUri = exchange.getAttribute(ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR);
 			String path = Optional.ofNullable(gatewayRequestUri).map(Object::toString).orElse(exchange.getRequest().getURI().toString());
 			String method = exchange.getRequest().getMethod().name();
+			
 			if (logRequestProperties.isEnabled()) {
-				log.info(traceId, "{} {} start", method, path);
+				log.info(traceId, "{} {} start, request body:{}", method, path, exchange.getAttribute(GatewayConstant.ATTR_REQUEST_BODY));
 			}
 			return chain.filter(exchange)
 				.doOnTerminate(() -> {

@@ -18,6 +18,7 @@ import org.springframework.web.reactive.result.view.ViewResolver;
 import com.zakiis.core.domain.constants.ZakiisStarterConstants;
 import com.zakiis.gateway.exception.JsonErrorWebExceptionHandler;
 import com.zakiis.gateway.filter.LogRequestFilter;
+import com.zakiis.gateway.filter.ParameterFilter;
 import com.zakiis.gateway.filter.TraceIdFilter;
 
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +43,12 @@ public class GatewayAutoConfiguration {
 	public TraceIdFilter traceIdFilter(GatewayProperties properties) {
 		log.info("Trace id feature enabled.");
 		return new TraceIdFilter(properties.getTraceId());
+	}
+	
+	@Bean
+	@ConditionalOnMissingBean
+	public ParameterFilter parameterFilter() {
+		return new ParameterFilter();
 	}
 	
 	@Bean
