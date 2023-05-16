@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>io.github.zakiis</groupId>
 		<artifactId>spring-cloud-zakiis-starter-parent</artifactId>
-		<version>2022.0.1-SNAPSHOT</version>
+		<version>2022.0.1-M1</version>
 		<relativePath>../../zakiis-release/spring-cloud-zakiis-starter-parent</relativePath>
 	</parent>
 

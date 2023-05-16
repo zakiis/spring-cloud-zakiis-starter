@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>io.github.zakiis</groupId>
 		<artifactId>zakiis-auditlog-starter</artifactId>
-		<version>2022.0.1-SNAPSHOT</version>
+		<version>2022.0.1-M1</version>
 	</parent>
 
 	<artifactId>zakiis-auditlog-client-starter</artifactId>

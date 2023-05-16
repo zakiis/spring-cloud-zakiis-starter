@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.github.zakiis</groupId>
 	<artifactId>spring-cloud-zakiis-starter</artifactId>
-	<version>2022.0.1-SNAPSHOT</version>
+	<version>2022.0.1-M1</version>
 	<packaging>pom</packaging>
 
 	<name>spring-cloud-zakiis-starter</name>
@@ -44,9 +44,21 @@
 	</developers>
 
 	<scm>
-		<connection>scm:git:git://github.com:zakiis/zakiis-release.git</connection>
+		<connection>scm:git:git://github.com:zakiis/spring-cloud-zakiis-starter.git</connection>
 		<developerConnection>scm:git:ssh://github.com:zakiis/zakiis-release.git</developerConnection>
 		<url>http://github.com/zakiis/zakiis-release/tree/main</url>
 	</scm>
 	
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>3.1.1</version>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
