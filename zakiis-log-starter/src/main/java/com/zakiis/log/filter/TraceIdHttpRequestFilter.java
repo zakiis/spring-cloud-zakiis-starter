@@ -1,23 +1,25 @@
 package com.zakiis.log.filter;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.MediaType;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.zakiis.log.config.TraceIdProperties;
 import com.zakiis.log.holder.TraceIdHolder;
+import com.zakiis.log.servlet.RepeatableReadServletRequest;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.ReadListener;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,42 +45,32 @@ public class TraceIdHttpRequestFilter extends OncePerRequestFilter {
 			filterChain.doFilter(request, response);
 			return;
 		}
-		// 由于request的InputStream只能读取一次，需要创建一个新的request对象
-		byte[] bytes = request.getInputStream().readAllBytes();
-		HttpServletRequestWrapper newRequest = new HttpServletRequestWrapper(request) {
-			@Override
-			public ServletInputStream getInputStream() throws IOException {
-				ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-				return new ServletInputStream() {
-					@Override
-					public int read() throws IOException {
-						return bis.read();
-					}
-					@Override
-					public void setReadListener(ReadListener readListener) {
-						
-					}
-					@Override
-					public boolean isReady() {
-						return true;
-					}
-					@Override
-					public boolean isFinished() {
-						return false;
-					}
-				};
+		String bodyStr = StringUtils.EMPTY;
+		String contentType = request.getContentType();
+		String path = request.getRequestURI();
+		if (contentType == null || !contentType.contains(MediaType.MULTIPART_FORM_DATA_VALUE)) {
+			// 由于request的InputStream只能读取一次，需要创建一个新的request对象
+			byte[] bytes = request.getInputStream().readAllBytes();
+			request = new RepeatableReadServletRequest(request, bytes);
+			Map<String,String[]> parameterMap = request.getParameterMap();
+			if (!parameterMap.isEmpty() && !(request instanceof MultipartHttpServletRequest)) {
+				List<String> params = new ArrayList<String>();
+				for (Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
+					params.add(String.format("%s=%s", entry.getKey(), StringUtils.join(entry.getValue(), ",")));
+				}
+				path += "?" + StringUtils.join(params, "&");
 			}
-		};
+		}
 		long start = System.currentTimeMillis();
 		try {
 			String traceId = request.getHeader(traceIdProperties.getHeader());
 			TraceIdHolder.set(traceId);
-			log.info("{} {} start, request body:{}", request.getMethod(), request.getRequestURI(), new String(bytes, StandardCharsets.UTF_8));
-			filterChain.doFilter(newRequest, response);
+			log.info("{} {} start, request body:{}", request.getMethod(), path, bodyStr);
+			filterChain.doFilter(request, response);
 		} finally {
 			long end = System.currentTimeMillis();
 			log.info("{} {} end, status: {}, time elapse {} ms", request.getMethod()
-					, request.getRequestURI(), response.getStatus(), end - start);
+					, path, response.getStatus(), end - start);
 			TraceIdHolder.clear();
 		}
 	}
