@@ -2,9 +2,11 @@ package com.zakiis.gateway.filter;
 
 import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.web.server.ServerWebExchange;
@@ -20,6 +22,13 @@ public class ParameterFilter implements WebFilter {
 
 	@Override
 	public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+		ServerHttpRequest request = exchange.getRequest();
+		String contentLength = request.getHeaders().getFirst(HttpHeaders.CONTENT_LENGTH);
+		String contentType = request.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
+		if ("0".equals(contentLength)
+				|| (StringUtils.isNotBlank(contentType) &&!contentType.startsWith(MediaType.APPLICATION_JSON_VALUE)) ) {
+        	return chain.filter(exchange);
+        }
 		return DataBufferUtils.join(exchange.getRequest().getBody())
 			.switchIfEmpty(chain.filter(exchange).then(Mono.empty()))
 			.flatMap(dataBuffer -> {
