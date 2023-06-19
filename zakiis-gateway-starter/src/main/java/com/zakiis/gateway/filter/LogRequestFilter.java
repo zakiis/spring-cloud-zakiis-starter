@@ -4,12 +4,12 @@ import java.net.URI;
 import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
-import org.springframework.cloud.gateway.filter.GatewayFilterChain;
-import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.cloud.gateway.filter.ReactiveLoadBalancerClientFilter;
 import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
 import org.springframework.core.Ordered;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilter;
+import org.springframework.web.server.WebFilterChain;
 
 import com.zakiis.core.domain.constants.CommonConstants;
 import com.zakiis.gateway.config.GatewayProperties.LogRequestConfig;
@@ -20,20 +20,18 @@ import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
-public class LogRequestFilter implements GlobalFilter, Ordered {
+public class LogRequestFilter implements WebFilter, Ordered {
 	
 	private final LogRequestConfig logRequestProperties;
 	private static final ReactiveLogger log = new ReactiveLogger(LoggerFactory.getLogger(LogRequestFilter.class));
 
 	@Override
-	public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+	public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
 		return Mono.deferContextual(ctx -> {
 			final String traceId = ctx.get(CommonConstants.TRACE_ID_PARAM_NAME);
 			long start = System.currentTimeMillis();
-			URI gatewayRequestUri = exchange.getAttribute(ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR);
-			String path = Optional.ofNullable(gatewayRequestUri).map(Object::toString).orElse(exchange.getRequest().getURI().toString());
+			String path = exchange.getRequest().getURI().getPath();
 			String method = exchange.getRequest().getMethod().name();
-			
 			if (logRequestProperties.isEnabled()) {
 				log.info(traceId, "{} {} start, request body:{}", method, path, exchange.getAttribute(GatewayConstant.ATTR_REQUEST_BODY));
 			}
@@ -41,7 +39,9 @@ public class LogRequestFilter implements GlobalFilter, Ordered {
 				.doOnTerminate(() -> {
 					long end = System.currentTimeMillis();
 					if (logRequestProperties.isEnabled()) {
-						log.info(traceId, "{} {} end, status: {}, time elapse {} ms", method, path, exchange.getResponse().getStatusCode(), end - start);
+						URI gatewayRequestUri = exchange.getAttribute(ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR);
+						String routedPath = Optional.ofNullable(gatewayRequestUri).map(Object::toString).orElse(path);
+						log.info(traceId, "{} {} end, status: {}, time elapse {} ms", method, routedPath, exchange.getResponse().getStatusCode(), end - start);
 					}
 				});
 		});
@@ -52,7 +52,7 @@ public class LogRequestFilter implements GlobalFilter, Ordered {
 	 */
 	@Override
 	public int getOrder() {
-		return ReactiveLoadBalancerClientFilter.LOAD_BALANCER_CLIENT_FILTER_ORDER + 1;
+		return GatewayConstant.ORDER_LOG_REQUEST_FILTER;
 	}
 
 }

@@ -4,24 +4,25 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.cloud.gateway.filter.GatewayFilterChain;
-import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilter;
+import org.springframework.web.server.WebFilterChain;
 
 import com.zakiis.core.domain.constants.CommonConstants;
 import com.zakiis.gateway.config.GatewayProperties.TraceIdConfig;
+import com.zakiis.gateway.constant.GatewayConstant;
 
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
-public class TraceIdFilter implements GlobalFilter, Ordered {
+public class TraceIdFilter implements WebFilter, Ordered {
 	
 	private final TraceIdConfig traceIdProperties;
 
 	@Override
-	public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+	public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
 		if (!traceIdProperties.isEnabled()) {
 			return chain.filter(exchange);
 		}
@@ -48,7 +49,7 @@ public class TraceIdFilter implements GlobalFilter, Ordered {
 
 	@Override
 	public int getOrder() {
-		return Ordered.HIGHEST_PRECEDENCE;
+		return GatewayConstant.ORDER_TRACE_ID_FILTER;
 	}
 
 }

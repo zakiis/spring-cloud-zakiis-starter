@@ -3,6 +3,7 @@ package com.zakiis.gateway.filter;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;
@@ -18,7 +19,13 @@ import com.zakiis.gateway.constant.GatewayConstant;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public class ParameterFilter implements WebFilter {
+/**
+ * Reading request body
+ * GatewayClient -> GatewayHandlerMapping -> GatewayWebFilter -> Gateway Filter
+ * @date 2023-06-19 15:34:19
+ * @author Liu Zhenghua
+ */
+public class ParameterFilter implements WebFilter, Ordered {
 
 	@Override
 	public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
@@ -77,6 +84,11 @@ public class ParameterFilter implements WebFilter {
             }
         }.mutate().header(HttpHeaders.CONTENT_LENGTH, "0").build();
         return exchange.mutate().request(newRequest).build();
+	}
+
+	@Override
+	public int getOrder() {
+		return GatewayConstant.ORDER_PARAMETER_FILTER;
 	}
 
 }
