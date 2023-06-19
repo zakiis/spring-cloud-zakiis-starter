@@ -25,12 +25,17 @@ public class ParameterFilter implements WebFilter {
 		ServerHttpRequest request = exchange.getRequest();
 		String contentLength = request.getHeaders().getFirst(HttpHeaders.CONTENT_LENGTH);
 		String contentType = request.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
+		// check content length so that can avoid create new empty request.
 		if ("0".equals(contentLength)
 				|| (StringUtils.isNotBlank(contentType) &&!contentType.startsWith(MediaType.APPLICATION_JSON_VALUE)) ) {
         	return chain.filter(exchange);
         }
 		return DataBufferUtils.join(exchange.getRequest().getBody())
-			.switchIfEmpty(chain.filter(exchange).then(Mono.empty()))
+			.switchIfEmpty(Mono.defer(() -> {
+				// request body had been read by DataBufferUtils.join, and the state changed to 'COMPLETE', need create new request to avoid IllegaStateException.
+				ServerWebExchange emptyRequestExchange = buildEmptyRequestExchange(exchange);
+				return chain.filter(emptyRequestExchange).then(Mono.empty());
+			}))
 			.flatMap(dataBuffer -> {
 				if (dataBuffer == null) {
 					return chain.filter(exchange);
@@ -38,7 +43,6 @@ public class ParameterFilter implements WebFilter {
 				// 读取body
 				byte[] bytes = new byte[dataBuffer.readableByteCount()];
                 dataBuffer.read(bytes);
-                DataBufferUtils.release(dataBuffer);
                 exchange.getAttributes().put(GatewayConstant.ATTR_REQUEST_BODY, new String(bytes, StandardCharsets.UTF_8));
                 // 创建新的 request
                 Flux<DataBuffer> newBodyFlux = Flux.defer(() -> {
@@ -53,6 +57,26 @@ public class ParameterFilter implements WebFilter {
                 }.mutate().header(HttpHeaders.CONTENT_LENGTH, String.valueOf(bytes.length)).build(); //coding issue may cause the content length changed.
                 return chain.filter(exchange.mutate().request(newRequest).build());
 			});
+	}
+	
+	/**
+	 * build an empty request body exchange.
+	 * @param exchange
+	 * @return
+	 */
+	private ServerWebExchange buildEmptyRequestExchange(ServerWebExchange exchange) {
+		// empty request body
+		Flux<DataBuffer> newBodyFlux = Flux.defer(() -> {
+        	DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(new byte[0]);
+        	return Mono.just(buffer);
+        });
+		ServerHttpRequest newRequest = new ServerHttpRequestDecorator(exchange.getRequest()) {
+            @Override
+            public Flux<DataBuffer> getBody() {
+                return newBodyFlux;
+            }
+        }.mutate().header(HttpHeaders.CONTENT_LENGTH, "0").build();
+        return exchange.mutate().request(newRequest).build();
 	}
 
 }
