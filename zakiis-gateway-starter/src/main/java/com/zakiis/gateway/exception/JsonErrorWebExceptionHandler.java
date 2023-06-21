@@ -19,6 +19,8 @@ import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
+import com.zakiis.core.exception.BusinessException;
+import com.zakiis.core.exception.web.StandardHttpException;
 import com.zakiis.gateway.config.GatewayProperties.TraceIdConfig;
 
 /**
@@ -46,17 +48,39 @@ public class JsonErrorWebExceptionHandler extends DefaultErrorWebExceptionHandle
 		Map<String, Object> errorAttributes = new LinkedHashMap<>();
 		errorAttributes.put("timestamp", new Date());
 		Throwable error = getError(request);
-		HttpStatus errorStatus = HttpStatus.INTERNAL_SERVER_ERROR;
-		if (error instanceof NotFoundException) {
-			errorStatus = HttpStatus.NOT_FOUND;
+		boolean isBuiltInError = processBuiltInError(errorAttributes, error);
+		if (!isBuiltInError) {
+			HttpStatus errorStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+			if (error instanceof NotFoundException) {
+				errorStatus = HttpStatus.NOT_FOUND;
+			}
+			errorAttributes.put("status", errorStatus.value());
+			String errorCode = "999999";
+			String errorMsg = Optional.ofNullable(error.getMessage()).orElse(errorStatus.getReasonPhrase());
+			// set user-defined fields, com.zakiis.core.domain.dto.Resp
+			errorAttributes.put("code", errorCode);
+			errorAttributes.put("message", errorMsg);
+			errorAttributes.put("success", false);
 		}
-		errorAttributes.put("status", errorStatus.value());
-		String errorCode = "999999";
-		String errorMsg = Optional.ofNullable(error.getMessage()).orElse(errorStatus.getReasonPhrase());
-		errorAttributes.put("code", errorCode);
-		errorAttributes.put("msg", errorMsg);
 		errorAttributes.put("traceId", request.exchange().getRequest().getHeaders().getFirst(traceIdConfig.getHttpHeaderKey()));
 		return errorAttributes;
+	}
+
+	private boolean processBuiltInError(Map<String, Object> errorAttributes, Throwable e) {
+		if (e instanceof StandardHttpException httpException) {
+			// status field represents HTTP status code
+			errorAttributes.put("status", httpException.getHttpStatusCode());
+			errorAttributes.put("code", String.valueOf(httpException.getHttpStatusCode()));
+			errorAttributes.put("message", httpException.getMessage());
+			errorAttributes.put("success", false);
+			return true;
+		} else if (e instanceof BusinessException bizException) {
+			errorAttributes.put("status", HttpStatus.OK.value());
+			errorAttributes.put("code", bizException.getCode());
+			errorAttributes.put("message", bizException.getMessage());
+			errorAttributes.put("success", false);
+		}
+		return false;
 	}
 
 	
