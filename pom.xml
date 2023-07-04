@@ -14,6 +14,7 @@
 	
 	<modules>
 		<module>zakiis-auditlog-starter</module>
+		<module>zakiis-dtp-starter</module>
 		<module>zakiis-gateway-starter</module>
 		<module>zakiis-job-starter</module>
 		<module>zakiis-log-starter</module>

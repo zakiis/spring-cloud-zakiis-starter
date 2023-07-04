@@ -48,10 +48,11 @@ public class LogRequestFilter implements WebFilter, Ordered {
 				log.info(traceId, "{} {} start, request body:{}", method, path, exchange.getAttribute(GatewayConstant.ATTR_REQUEST_BODY));
 			}
 			return chain.filter(exchange)
-				.onErrorResume(t -> handleEmptyResponseStatusException(exchange, t))
+				.onErrorResume(t -> writeBodyIfEmptyForResponseStatusException(exchange, t))
 				.doOnError(t -> {
 					HttpStatus httpStatus = ExceptionUtil.getHttpStatus(t);
 					exchange.getResponse().setStatusCode(httpStatus);
+					ExceptionUtil.printErrorLog(log, traceId, t, httpStatus);
 					printEndLog(path, method, httpStatus, start, traceId);
 				})
 				.then(Mono.defer(() -> {
@@ -72,11 +73,12 @@ public class LogRequestFilter implements WebFilter, Ordered {
 	
 	/**
 	 * write body for ReponseStatusException while the response body is empty
+	 * @see {@link org.springframework.web.server.handler.ResponseStatusExceptionHandler}
 	 * @param exchange
 	 * @param t
 	 * @return
 	 */
-	public Mono<Void> handleEmptyResponseStatusException(ServerWebExchange exchange, Throwable t) {
+	public Mono<Void> writeBodyIfEmptyForResponseStatusException(ServerWebExchange exchange, Throwable t) {
 		if (t instanceof ResponseStatusException e) {
 			Long contentLength = Optional.of(exchange.getResponse()).map(ServerHttpResponse::getHeaders)
 				.map(h -> h.getFirst(HttpHeaders.CONTENT_LENGTH)).filter(StringUtils::isNotBlank)
