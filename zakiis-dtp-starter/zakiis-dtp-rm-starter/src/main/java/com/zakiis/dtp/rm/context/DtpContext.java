@@ -1,6 +1,7 @@
 package com.zakiis.dtp.rm.context;
 
 import com.zakiis.core.ThreadContext;
+import com.zakiis.dtp.rm.constants.DtpConstant;
 
 /**
  * Distributed Transaction Processor Model Context
@@ -17,5 +18,13 @@ public class DtpContext {
 	
 	public static <T> void put(String key, T value) {
 		ctx.put(key, value);
+	}
+	
+	public static <T> void remove(String key) {
+		
+	}
+	
+	public static String getXid() {
+		return get(DtpConstant.KEY_XID);
 	}
 }
