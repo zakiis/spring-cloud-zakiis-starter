@@ -4,6 +4,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jboss.logging.MDC;
+import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
 import org.springframework.core.Ordered;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
@@ -23,6 +25,7 @@ public class TraceIdFilter implements WebFilter, Ordered {
 
 	@Override
 	public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+		exchange.getAttributes().put(ServerWebExchangeUtils.PRESERVE_HOST_HEADER_ATTRIBUTE, true);
 		if (!traceIdProperties.isEnabled()) {
 			return chain.filter(exchange);
 		}
@@ -36,11 +39,15 @@ public class TraceIdFilter implements WebFilter, Ordered {
 						.build()
 				).build();
 		}
+		MDC.put(CommonConstants.TRACE_ID_PARAM_NAME, traceId);
 		AtomicReference<String> traceIdRefer = new AtomicReference<String>(traceId);
 		return chain.filter(exchange)
 			.contextWrite(ctx -> ctx
 				.put(CommonConstants.TRACE_ID_PARAM_NAME, traceIdRefer.get())
-			);
+			).doOnTerminate(() -> {
+				// in compatible for classes that relies on thread local logger 
+				MDC.remove(CommonConstants.TRACE_ID_PARAM_NAME);
+			});
 	}
 	
 	public String generateTraceId() {

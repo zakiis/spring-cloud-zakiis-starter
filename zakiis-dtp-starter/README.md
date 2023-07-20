@@ -10,6 +10,10 @@ There are many ways to implement the DTP, each pattern focus on the specified si
 
 ![dtp_overview](readme_imgs/dtp_overview.png)
 
+### Domain Model
+
+![domain model.png](readme_imgs/domain model.png)
+
 ### Message-based Transaction
 
 The core concept of the message-based distributed transaction mode is to inform other transaction participants of its own execution status through the message system.

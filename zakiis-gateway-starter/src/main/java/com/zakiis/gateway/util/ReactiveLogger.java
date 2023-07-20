@@ -23,49 +23,54 @@ public class ReactiveLogger {
 	public static final String FQCN = ReactiveLogger.class.getName();
 	
 	public void debug(String traceId, String format, Object... arguments) {
+		String threadTraceId = MDC.get(CommonConstants.TRACE_ID_PARAM_NAME);
 		MDC.put(CommonConstants.TRACE_ID_PARAM_NAME, traceId);
 		if (log instanceof LocationAwareLogger alog) {
 			log(alog, FQCN, format, LocationAwareLogger.DEBUG_INT, arguments);
 		} else {
 			log.debug(format, arguments);
 		}
-		MDC.clear();
+		MDC.put(CommonConstants.TRACE_ID_PARAM_NAME, threadTraceId);
 	}
 	
 	public void info(String traceId, String format, Object... arguments) {
+		String threadTraceId = MDC.get(CommonConstants.TRACE_ID_PARAM_NAME);
 		MDC.put(CommonConstants.TRACE_ID_PARAM_NAME, traceId);
 		if (log instanceof LocationAwareLogger alog) {
 			log(alog, FQCN, format, LocationAwareLogger.INFO_INT, arguments);
 		} else {
 			log.info(format, arguments);
 		}
-		MDC.clear();
+		MDC.put(CommonConstants.TRACE_ID_PARAM_NAME, threadTraceId);
 	}
 	
 	public void warn(String traceId, String format, Object... arguments) {
+		String threadTraceId = MDC.get(CommonConstants.TRACE_ID_PARAM_NAME);
 		MDC.put(CommonConstants.TRACE_ID_PARAM_NAME, traceId);
 		if (log instanceof LocationAwareLogger alog) {
 			log(alog, FQCN, format, LocationAwareLogger.WARN_INT, arguments);
 		} else {
 			log.warn(format, arguments);
 		}
-		MDC.clear();
+		MDC.put(CommonConstants.TRACE_ID_PARAM_NAME, threadTraceId);
 	}
 	
 	public void error(String traceId, String format, Object... arguments) {
+		String threadTraceId = MDC.get(CommonConstants.TRACE_ID_PARAM_NAME);
 		MDC.put(CommonConstants.TRACE_ID_PARAM_NAME, traceId);
 		if (log instanceof LocationAwareLogger alog) {
 			log(alog, FQCN, format, LocationAwareLogger.ERROR_INT, arguments);
 		} else {
 			log.error(format, arguments);
 		}
-		MDC.clear();
+		MDC.put(CommonConstants.TRACE_ID_PARAM_NAME, threadTraceId);
 	}
 	
 	public void log(LocationAwareLogger alog, String traceId, String fqcn, String format, int level, Object... arguments) {
+		String threadTraceId = MDC.get(CommonConstants.TRACE_ID_PARAM_NAME);
 		MDC.put(CommonConstants.TRACE_ID_PARAM_NAME, traceId);
 		log(alog, fqcn, format, level, arguments);
-		MDC.clear();
+		MDC.put(CommonConstants.TRACE_ID_PARAM_NAME, threadTraceId);
 	}
 	
 	private void log(LocationAwareLogger alog, String fqcn, String format, int level, Object... arguments) {

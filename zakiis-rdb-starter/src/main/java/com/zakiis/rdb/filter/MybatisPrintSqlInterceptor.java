@@ -1,6 +1,8 @@
 package com.zakiis.rdb.filter;
 
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -30,6 +32,8 @@ import lombok.extern.slf4j.Slf4j;
 	
 })
 public class MybatisPrintSqlInterceptor implements Interceptor {
+	
+	private final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 	
 	@Override
 	public Object intercept(Invocation invocation) throws Throwable {
@@ -84,6 +88,9 @@ public class MybatisPrintSqlInterceptor implements Interceptor {
 		if (paramValue instanceof Date) {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			return "'" + sdf.format(paramValue) + "'";
+		}
+		if (paramValue instanceof TemporalAccessor ta) {
+			return "'" + FORMATTER.format(ta) + "'";
 		}
 		return paramValue.toString();
 	}

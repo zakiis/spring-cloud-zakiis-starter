@@ -8,6 +8,7 @@ import org.slf4j.spi.LocationAwareLogger;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.zakiis.core.exception.BusinessException;
@@ -24,6 +25,8 @@ public class ExceptionUtil {
 		} else if (t instanceof HttpStatusCodeException e) {
 			status = HttpStatus.valueOf(e.getStatusCode().value());
 		} else if (t instanceof ResponseStatusException e) {
+			status = HttpStatus.valueOf(e.getStatusCode().value());
+		} else if (t instanceof WebClientResponseException e) {
 			status = HttpStatus.valueOf(e.getStatusCode().value());
 		} else if (t instanceof BusinessException e) {
 			status = HttpStatus.OK;

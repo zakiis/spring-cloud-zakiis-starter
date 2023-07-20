@@ -72,7 +72,7 @@ public class JsonErrorWebExceptionHandler extends DefaultErrorWebExceptionHandle
 			errorAttributes.put("code", bizException.getCode());
 			errorAttributes.put("message", bizException.getMessage());
 		} else {
-			String errorCode = "999999";
+			String errorCode = String.valueOf(httpStatus.value());
 			String errorMsg = Optional.ofNullable(e.getMessage()).orElse(httpStatus.getReasonPhrase());
 			errorAttributes.put("code", errorCode);
 			errorAttributes.put("message", errorMsg);

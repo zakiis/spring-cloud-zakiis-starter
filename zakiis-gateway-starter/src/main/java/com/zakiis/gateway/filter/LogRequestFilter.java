@@ -87,7 +87,8 @@ public class LogRequestFilter implements WebFilter, Ordered {
 				HttpStatus httpStatus = ExceptionUtil.getHttpStatus(t);
 				exchange.getResponse().setStatusCode(httpStatus);
 				exchange.getResponse().getHeaders().set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-				Resp resp = CommonResp.fail(String.valueOf(httpStatus.value()), httpStatus.getReasonPhrase());
+				String msg = e.getReason() != null ? e.getReason() : httpStatus.getReasonPhrase();
+				Resp resp = CommonResp.fail(String.valueOf(httpStatus.value()), msg);
 				DataBuffer dataBuffer = exchange.getResponse().bufferFactory().wrap(JsonUtil.toJson(resp).getBytes());
 				return exchange.getResponse().writeWith(Mono.just(dataBuffer));
 			}

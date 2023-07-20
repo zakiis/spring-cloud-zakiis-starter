@@ -17,8 +17,8 @@
 	<packaging>pom</packaging>
 	
 	<modules>
-		<module>zakiis-dtp-rm-starter</module>
-		<module>zakiis-dtp-tm-starter</module>
+		<module>zakiis-dtp-client-starter</module>
+		<module>zakiis-dtp-server-starter</module>
 	</modules>
 
 </project>
