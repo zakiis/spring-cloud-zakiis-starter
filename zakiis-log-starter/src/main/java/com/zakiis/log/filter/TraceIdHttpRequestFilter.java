@@ -51,6 +51,7 @@ public class TraceIdHttpRequestFilter extends OncePerRequestFilter {
 		if (contentType == null || !contentType.contains(MediaType.MULTIPART_FORM_DATA_VALUE)) {
 			// 由于request的InputStream只能读取一次，需要创建一个新的request对象
 			byte[] bytes = request.getInputStream().readAllBytes();
+			bodyStr = new String(bytes);
 			request = new RepeatableReadServletRequest(request, bytes);
 			Map<String,String[]> parameterMap = request.getParameterMap();
 			if (!parameterMap.isEmpty() && !(request instanceof MultipartHttpServletRequest)) {
